@@ -7,7 +7,7 @@ AMT Creator -
 
 
 AMB Combiner - 
-
+Is complete
 
 AMG Creator - 
 
@@ -16,7 +16,7 @@ AMG Addition -
 
 
 AMO0 Editor - 
-
+Is being completed, just editing the code to change each value required
 
 AMO0 Creator - 
 
@@ -25,10 +25,10 @@ Model Part Editor -
 
 
 Budokai 1 Importer - 
-
+Is complete
 
 Budokai 1 Exporter - 
-
+Is complete
 
 LGBT Tool - 
 
