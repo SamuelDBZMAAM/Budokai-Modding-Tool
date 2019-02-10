@@ -31,8 +31,8 @@
 #Budokai Modding Tool - Main Program
 #Sub-Programs below:
 #
-#AMT Editor - doing - 2
-#AMT Creator
+#AMT Editor - doing - discontinued
+#AMT Creator - done
 #AMB Combiner - done
 #AMG Creator - doing - 4
 #AMG Addition - doing - 3
@@ -45,7 +45,7 @@
 #Shin Budokai Importer
 #Shin Budokai Exporter
 #Model Viewer
-#Texture Viewer
+#Texture Viewer - done (shin budokai texture viewer)
 #Random Model Feature
 #Random Texture Feature
 #Tasks/Achievements
@@ -77,11 +77,15 @@ func_list = ["AMT Editor", "AMT Creator", "AMB Combiner", "AMG Creator", "AMG Ad
              "Random Model Feature", "Random Texture Feature", "Tasks and Achievements", "Aura Editor", "Aura Creator"]
 
 
+useable = ["Model Part Editor", "AMT Creator", "Budokai 1 Exporter",
+           "Budokai 1 Importer", "AMB Combine", "SB2 AMT Edit"]
+
+
 #Main Function to load other ones
 
 def main():
     print("Welcome to the Budokai Modding Tool!")
-    print(func_list)
+    print(useable)
     print("")
     print("Please select the function you would like to use: ")
     x = input("")
@@ -99,12 +103,15 @@ def main():
     if x == "AMB Combine" or x == "amb":
         import amb_c
         amb_c.main()
-    if x == "AMT Editor" or x == "amte":
-        import amt_e
-        amt_e.main()
-    if x == "AMO Editor" or x == "amoe":
-        import amo_e
-        amo_e.main()
+    if x == "AMT Creator" or x == "amtc":
+        import amt_c
+        amt_c.main()
+    if x == "SB2 AMT Edit" or x == "amtsb":
+        import amt_sb.py
+        amt_sb.py()
+    #if x == "AMO Editor" or x == "amoe":
+        #import amo_e
+        #amo_e.main()
 
 
 
@@ -118,7 +125,7 @@ def end():
     exit()
 
 def false_end():
-    print("Do it right next time")
+    print("Error, please try again.")
     main()
 
 main()

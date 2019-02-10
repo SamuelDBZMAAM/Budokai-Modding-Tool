@@ -2,7 +2,7 @@
 #Purpose of this sub-program - To edit the model parts of a character file i.e.
 #Editing the texture number, shader number, border number and model type
 
-options = ["Border", "Texture Edit", "Shader Edit", "Shader Fix"]
+options = ["Border", "Shader Fix"]
 border_option = ["r", "a"]
 
 def main():
@@ -26,7 +26,7 @@ def main():
             while chunk != b"":
                 if chunk[0] == 0x1 and chunk[8] == 0x46:
                     offsets.append(((f.tell()-16)))
-                    print(hex(f.tell()-16))
+                    #print(hex(f.tell()-16))
                     counter += 1
                 chunk = f.read(16)
 
@@ -44,7 +44,7 @@ def main():
             while chunk != b"":
                 if chunk[0] == 0x1 and chunk[8] == 0x47:
                     offsets.append(((f.tell()-16)))
-                    print(hex(f.tell()-16))
+                    #print(hex(f.tell()-16))
                     counter += 1
                 chunk = f.read(16)
 
@@ -68,7 +68,7 @@ def main():
         while chunk != b"":
             if chunk[0] == 0xB4 and chunk[12] == 0xFF:
                 offsets.append(((f.tell()-16)))
-                print(hex(f.tell()-16))
+                #print(hex(f.tell()-16))
                 counter += 1
             chunk = f.read(16)
         for i in offsets:
@@ -91,13 +91,15 @@ def main():
         f.close()
 
         
-    if x == "Texture Edit" or x == "t":
-        #give user options to change the texture number of a model part
-        print("")
-    if x == "Shader Edit" or x == "s":
-        #Give user options to change the shader number of a model part
-        print("")
-    exit()
+def again():
+    yn = input("Load another? (Y/N)")
+    yn = yn.lower()
+    yn = yn[0:1]
+    if yn == "y":
+        main()
+        again()
+    else:
+        kill = input("press enter to close")
 
 
 
@@ -105,3 +107,5 @@ def main():
 
     
 main()
+again()
+exit()

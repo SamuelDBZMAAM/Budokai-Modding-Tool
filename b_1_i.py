@@ -12,7 +12,7 @@ def main():
     while chunk != b"":
         if chunk[0] == 0xB5 and chunk[1] == 0x01:
             offsets.append(((f.tell()-16)))
-            print(hex(f.tell()-16))
+            #print(hex(f.tell()-16))
             counter += 1
         chunk = f.read(16)
     for i in offsets:
@@ -101,6 +101,17 @@ def main():
     print("")
     f.close()
 
+def again():
+    yn = input("Load another? (Y/N)")
+    yn = yn.lower()
+    yn = yn[0:1]
+    if yn == "y":
+        main()
+        again()
+    else:
+        kill = input("press enter to close")
+
 main()
+again()
 exit()
 

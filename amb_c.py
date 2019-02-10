@@ -4,7 +4,7 @@
 
 import struct
 
-c = "amb.bin"
+c = "Files/amb.bin"
 m = input("Name of AMO file: ")
 t = input("Name of AMT file: ")
 
@@ -44,8 +44,21 @@ def main():
 
     f.seek(52)
     f.write(struct.pack("<I", amt_length))
+    f.close()
+    
     print("Successfully added the AMO and AMT to an AMB")
+
+def again():
+    yn = input("Load another? (Y/N)")
+    yn = yn.lower()
+    yn = yn[0:1]
+    if yn == "y":
+        main()
+        again()
+    else:
+        kill = input("press enter to close")
 
 
 main()
+again()
 exit()

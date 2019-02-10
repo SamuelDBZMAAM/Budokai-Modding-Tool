@@ -9,7 +9,8 @@ def main():
     chunk = f.read(16)
     offsets = []
     counter = 0
-    shader_number = int(input("What is the number of the shader you want (hex): "))
+    print("What is the number of the shader you want (hex): ")
+    shader_number = int(input(""))
     shader = shader_number
     shader_number = chr(shader_number)
     shader_number = bytes(shader_number, ("utf-8"))
@@ -17,11 +18,11 @@ def main():
     while chunk != b"":
         if chunk[0] == 0xBD and chunk[1] == 0x11:
             offsets.append(((f.tell()-16)))
-            print(hex(f.tell()-16))
+            #print(hex(f.tell()-16))
             counter += 1
         if chunk[0] == 0xBD and chunk[1] == 0x01:
             offsets.append(((f.tell()-16)))
-            print(hex(f.tell()-16))
+            #print(hex(f.tell()-16))
             counter += 1
         chunk = f.read(16)
     for i in offsets:
@@ -110,5 +111,16 @@ def main():
     print("")
     f.close()
 
+def again():
+    yn = input("Load another? (Y/N)")
+    yn = yn.lower()
+    yn = yn[0:1]
+    if yn == "y":
+        main()
+        again()
+    else:
+        kill = input("press enter to close")
+
 main()
+again()
 exit()
