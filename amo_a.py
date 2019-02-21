@@ -10,6 +10,7 @@ import struct
 import math
 
 def main():
+    counter = 0
     ####Part 1 - gathering data, values, and splitting
     
     #lists for later stuff
