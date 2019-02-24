@@ -9,6 +9,20 @@ print("With this you can only add one AMG at a time")
 import struct
 import math
 
+def start():
+    print("If you haven't given the model a new line on the AMO0")
+    print("You can add it here, press Enter to skip or type A then enter to add")
+    line_choice = input("")
+    line_choice = line_choice.lower()
+    if line_choice == "a":
+        import amo_a
+        amo_a.main()
+
+    else:
+        print("")
+        main()
+        
+
 def main():
     print("AMG Editor, Insert AMG file:")
 
@@ -144,6 +158,6 @@ def again():
     else:
         kill = input("press enter to close")
 
-main()
+start()
 again()
 exit()
