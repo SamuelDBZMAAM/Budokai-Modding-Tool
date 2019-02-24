@@ -5,6 +5,8 @@
 import struct
 
 c = "Files/amb.bin"
+r = "Files/amb - copy.bin"
+n = "new_amb.bin"
 m = input("Name of AMO file: ")
 t = input("Name of AMT file: ")
 
@@ -44,9 +46,28 @@ def main():
 
     f.seek(52)
     f.write(struct.pack("<I", amt_length))
+
+    f.seek(0)
+
+    f_all = f.read()
+
+    
+    nf = open(n, "w+b")
+    nf.write(f_all)
+    
+    nf.close()
     f.close()
+
+    with open(c, "w+b") as output, open(r, "r+b") as input:
+        output.seek(0)
+        data = input.read()
+        output.write(data)
+
+    output.close()
+    input.close()
     
     print("Successfully added the AMO and AMT to an AMB")
+    
 
 def again():
     yn = input("Load another? (Y/N)")
