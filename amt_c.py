@@ -1,355 +1,336 @@
-#AMT Creator - amt_c
-#Purpose: To create an AMT for use in Budokai series
+# AMT Creator - amt_c
+# Purpose: To create AMTs
 
 
 import struct
 import math
+import os
 
 
 def main():
-    print("Give me a name for the new AMT file (with extension):")
-    #creates a new AMT file entirely
+    print("Name your new AMT name?")
     x = input("")
-    f = open(x, "w+b")
-    chunk = f.read(16)
+    f = open(x+".amt", "w+b")
 
-    tex_offsets = []
-    pal_offsets = []
-    block_offsets = []
+    # Copying files needed
+    header = open("Files/AMT/header.bin", "r+b")
+    header = header.read()
+    line = open("Files/AMT/line.bin", "r+b")
+    line = line.read()
     
-    #open up all the files for choice
-    #the "a" before variables is because python doesn't like numbers
-    #as variables, thus a64x64 and etc
-    
-    #basic shit for an amt to build
-    block = open("AMT/block.bin", "r+b")
-    header = open("AMT/header.bin", "r+b")
-    line = open("AMT/line.bin", "r+b")
-    
-    #16 colours
-    a64x64_16 = open("AMT/64x64.amt", "r+b")
-    a128x64_16 = open("AMT/128x64.amt", "r+b")
-    a128x128_16 = open("AMT/128x128.amt", "r+b")
-    a128x256_16 = open("AMT/128x256.amt", "r+b")
-    a256x128_16 = open("AMT/256x128.amt", "r+b")
-    a256x256_16 = open("AMT/256x256.amt", "r+b")
-    a256x512_16 = open("AMT/256x512.amt", "r+b")
-    a512x512_16 = open("AMT/512x512.amt", "r+b")
-    a512x256_16 = open("AMT/512x256.amt", "r+b")
+    a64x64_16 = open("Files/AMT/64x64.bin", "r+b")                  # 16 color
+    a128x64_16 = open("Files/AMT/128x64.bin", "r+b")
+    a128x128_16 = open("Files/AMT/128x128.bin", "r+b")
+    a128x256_16 = open("Files/AMT/128x256.bin", "r+b")
+    a256x128_16 = open("Files/AMT/256x128.bin", "r+b")
+    a256x256_16 = open("Files/AMT/256x256.bin", "r+b")
+    a256x512_16 = open("Files/AMT/256x512.bin", "r+b")
+    a512x512_16 = open("Files/AMT/512x512.bin", "r+b")
+    a512x256_16 = open("Files/AMT/512x256.bin", "r+b")
 
-    #256 colours
-    a64x64_256 = open("AMT/64x64(256).amt", "r+b")
-    a128x64_256 = open("AMT/128x64(256).amt", "r+b")
-    a128x128_256 = open("AMT/128x128(256).amt", "r+b")
-    a128x256_256 = open("AMT/128x256(256).amt", "r+b")
-    a256x128_256 = open("AMT/256x128(256).amt", "r+b")
-    a256x256_256 = open("AMT/256x256(256).amt", "r+b")
-    a256x512_256 = open("AMT/256x512(256).amt", "r+b")
-    a512x512_256 = open("AMT/512x512(256).amt", "r+b")
-    a512x256_256 = open("AMT/512x256(256).amt", "r+b")
-    a512x8_256 = open("AMT/512x8(256).amt", "r+b")
+    a64x64_256 = open("Files/AMT/64x64(256).bin", "r+b")            # 256 Color
+    a128x64_256 = open("Files/AMT/128x64(256).bin", "r+b")
+    a128x128_256 = open("Files/AMT/128x128(256).bin", "r+b")
+    a128x256_256 = open("Files/AMT/128x256(256).bin", "r+b")
+    a256x128_256 = open("Files/AMT/256x128(256).bin", "r+b")
+    a256x256_256 = open("Files/AMT/256x256(256).bin", "r+b")
+    a256x512_256 = open("Files/AMT/256x512(256).bin", "r+b")
+    a512x512_256 = open("Files/AMT/512x512(256).bin", "r+b")
+    a512x256_256 = open("Files/AMT/512x256(256).bin", "r+b")
 
+    default_shader = open("Files/AMT/Default Shader.bin", "r+b")    # Default shader
+    nxs_shader = open("Files/AMT/Nexus Shader (UHD).bin", "r+b")    # NXS UHD shader
+    # Making list
     col_16 = [a64x64_16, a128x64_16, a128x128_16,
               a128x256_16, a256x128_16, a256x256_16,
-              a256x512_16, a512x512_16, a512x256_16]
+              a256x512_16, a512x512_16, a512x256_16, default_shader, nxs_shader]
 
     col_256 = [a64x64_256, a128x64_256, a128x128_256,
-              a128x256_256, a256x128_256, a256x256_256,
-              a256x512_256, a512x512_256, a512x256_256, a512x8_256]
+               a128x256_256, a256x128_256, a256x256_256,
+               a256x512_256, a512x512_256, a512x256_256, default_shader, nxs_shader]
 
-    tex_16 = ["64x64", "128x64", "128x128",
-              "128x256", "256x128", "256x256",
-              "256x512", "512x512", "512x256"]
-
-    tex_256 = ["64x64", "128x64", "128x128",
+    tex_list = ["64x64", "128x64", "128x128",
                "128x256", "256x128", "256x256",
-               "256x512", "512x512", "512x256", "512x8"]
+               "256x512", "512x512", "512x256","Default Shader", "Nexus Shader"]
 
-    #code to use for making the amt
-    print("How many textures are there: ")
+    # Setting up temp bins
+    tn1 = "Files\z.bin"  # Will hold edited bin
+    temp1 = open(tn1, "w+b")
+    temp1.close()
+    temp1 = open(tn1, "r+b")
+    tn2 = "Files\z2.bin"  # Will hold indexes
+    temp2 = open(tn2, "w+b")
+    temp2.close()
+    temp2 = open(tn2, "r+b")
+    tn3 = "Files\z3.bin"  # Will hold TEX/Palette data
+    temp3 = open(tn3, "w+b")
+    temp3.close()
+    temp3 = open(tn3, "r+b")
+
+    index_list_size = 0
+    header_size = 0
+
+    # Writes header
+    temp1.write(header)
+    print("How many textures?")
     tex_amount = int(input(""))
+    temp1.seek(16)
+    tex_am_value = struct.pack('<L', tex_amount)
+    temp1.write(tex_am_value)
+    temp1.seek(32)
     tex_am_lines = tex_line_calc(tex_amount)
-
-    #copies all of the data from header and line to paste in f
-    header_copy = header.read()
-    line_copy = line.read()
-    f.write(header_copy)
-
-    #for every line there is, paste it
     for i in range(tex_am_lines):
-        f.write(line_copy)
+        temp1.write(line)
 
-    #insert asking for what textures one would want
-    col_list = ["16", "256"]
-    print(col_list)
-    print("How many colours: ")
-    col_choice = input("")
-    while col_choice != "16" and col_choice != "256":
-        print("Not an option, please choose, please choose either 16 or 256")
-        col_choice = input("")
+    # Writing index offsets
+    switch = 0
+    header_size = temp1.tell()
+    temp1.seek(32)
+    index_o = struct.pack('<L', header_size)
+    index_o3 = 0
+    print("")
+    print("writing tex index offsets...")
+    index_o2 = index_offset(index_o, index_o3)
+    for i in range(tex_amount):
+        temp1.write(index_o2)
+        index_o3 = index_offset2(index_o3, switch, index_list_size, header_size)
+        index_o2 = index_offset(index_o, index_o3)
 
-    if col_choice == ("16"):
-        choice_list = []
-        #show list of different textures available
-        #print(tex_16)
-        #for loop that lasts for as many textures as you have asked for
-        #this is to psate the blocks first
-        for i in range(tex_amount):
-            print("Pick the texture you want")
-            print("(select the texture by typing it's position on the list)")
-            #asks you to chose what texture you want by number on the options
-            #so 64x64 = 1, 128x64 = 2, etc
+    # Selecting texture and putting them in temp bins
+    choice_list = []
+    print("")
+    print(tex_list)
+    for i in range(tex_amount):
+        print("")
+        print("Pick the texture you want")
+        print("(select the texture by typing it's position on the list)")
+        choice = int(input(""))
+        choice = choice - 1
+        print(choice)
+        while choice >= int(len(tex_list)):
+            # if it is not within range, it asks again
+            print("Not within range, try again:")
             choice = int(input(""))
-            #-1 from the choice so it works with picking the correct texture
-            #from the array and is correct
             choice = choice - 1
-            print(choice)
-
-            while choice >= int(len(tex_16)):
-                #if it is not within range, it asks again
-                print("Not within range, try again:")
-                choice = int(input(""))
-                choice = choice - 1
-            choice_list.append(choice)
-
-            #prints the chosen texture
-            #print(tex_16[choice])
-            print(choice_list)
-
-
-            #sets a variable to be the result of the function
-            tex_block_copy = block_16_pick(col_16, choice)
-
-            #writes that data to file
-            f.write(tex_block_copy)
-
-        #for the texture data
-        for i in range(tex_amount):
-            print("")
-            #another function that gets the variable the function
-            tex_data = col_16[choice_list[i]]
-            tex_data.seek(96)
-            tex_data_copy = tex_data.read(300000)
-            #writes that
-            f.write(tex_data_copy)
-
-
-
-
-
-            
+        choice_list.append(choice)
+        # prints the chosen texture
+        print(tex_list[choice])
+        print(choice_list)
+        # sets a variable to be the result of the function
+        index_block_copy = index_block_pick(col_16, col_256, choice, temp3)
+        # writes that data to file
+        temp2.write(index_block_copy)
         
-    #for if 256 colours was chosen
-    if col_choice == ("256"):
-        choice_list = []
-        #show list of different textures available
-        print(tex_256)
-        #for loop that lasts for as many textures as you have asked for
-        #this is to psate the blocks first
-        for i in range(tex_amount):
-            print("Pick the texture you want")
-            print("(select the texture by typing it's position on the list)")
-            #asks you to chose what texture you want by number on the options
-            #so 64x64 = 1, 128x64 = 2, etc
-            choice = int(input(""))
-            #-1 from the choice so it works with picking the correct texture
-            #from the array and is correct
-            choice = choice - 1
-            #print(choice)
-
-            while choice >= int(len(tex_256)):
-                #if it is not within range, it asks again
-                print("Not within range, try again:")
-                choice = int(input(""))
-                choice = choice - 1
-            choice_list.append(choice)
-
-            #prints the chosen texture
-            #print(tex_256[choice])
-            #print(choice_list)
-
-
-            #sets a variable to be the result of the function
-            tex_block_copy = block_256_pick(col_256, choice)
-
-            #writes that data to file
-            f.write(tex_block_copy)
-
-        #for the texture data
-        for i in range(tex_amount):
-            #print("")
-            #another function that gets the variable the function
-            tex_data = col_256[choice_list[i]]
-            tex_data.seek(96)
-            tex_data_copy = tex_data.read(300000)
-            #writes that
-            f.write(tex_data_copy)
-
-
-    #this changes the number of textures in the amt
-    f.seek(0)
-    f.seek(16)
-    shader_number = tex_amount
-    shader_number = chr(shader_number)
-    shader_number = bytes(shader_number, ("utf-8"))
-    
-    f.write(shader_number)
-    f.seek(0)
-
-
-    chunk = f.read(16)
-    #finds offsets of every texture and palette
-    while chunk != b"":
-        if chunk[12] == 0x54 and chunk[13] == 0x41 and chunk[14] == 0x5F:
-            tex_offsets.append(((f.tell()-16)))
-            #print(hex(f.tell()-16))
-            
-        if chunk[12] == 0x4C and chunk[13] == 0x45 and chunk[14] == 0x54:
-            pal_offsets.append(((f.tell()-16)))
-            #print(hex(f.tell()-16))
-
-        chunk = f.read(16)
-
-    #print(tex_offsets)
-    #print(pal_offsets)
-
-    #for extracting and placing the texture offsets
-    f.seek(0)
-    jump = (32 + (tex_am_lines * 16))
+    # Changing the index number
+    switch = 1
+    temp2.seek(0)
+    index_o = struct.pack('<L', 0)
+    index_o3 = 0
+    n_index = 0
+    print("")
+    print("correcting tex index numbers...")
+    index_o2 = index_offset(index_o, index_o3)
     for i in range(tex_amount):
-        f.seek(((i*48)+20) + jump)
-        offset_grab = tex_offsets[i]
-        offset_grab_1 = struct.pack("<I", offset_grab)
-        f.write(offset_grab_1)
-    #for extracting and placing the palette offsets
+        temp2.write(index_o2)
+        index_o3 = index_offset2(index_o3, switch, index_list_size, header_size)
+        n_index = next_index(n_index)
+        temp2.seek(n_index)
+        index_o2 = index_offset(index_o, index_o3)
+
+    # Changing the TEX/PAL offsets
+    prev_offset = 0
+    prev_offset2 = 0
+    temp2.seek(0)
+    temp2.read()
+    index_list_size = temp2.tell()
+    temp2.seek(20)
+    total = index_list_size + header_size
+    total = struct.pack('<L', total)
+    temp2.write(total)
+    total = index_list_size + header_size
+    prev = temp2.read(4)
+    prev = prev.hex()
+
+    prev = int(prev, 16)
+    prev = struct.pack('<L', prev)
+    prev = prev.hex()
+    prev = int(prev, 16)
+    prev_offset = prev + 32 + total
+
+    prev_offset = struct.pack('<L', prev_offset)
+    print(temp2.seek((temp2.tell() + 8)))
+    temp2.write(prev_offset)
+
+    for i in range(tex_amount-1):
+        previous_offset(prev, temp2, prev_offset, total)
+
+    # Assembles and Saves new AMT
+    temp1.close()
+    temp1 = open(tn1, "r+b")
+    temp2.close()
+    temp2 = open(tn2, "r+b")
+    temp3.close()
+    temp3 = open(tn3, "r+b")
+    t_copy = temp1.read()
     f.seek(0)
-    for i in range(tex_amount):
-        f.seek(((i*48)+36) + jump)
-        offset_grab = pal_offsets[i]
-        offset_grab_1 = struct.pack("<I", offset_grab)
-        f.write(offset_grab_1)    
-
-        
-    #for finding and placing the texture block locations
-    f.seek(0)
-    chunk = f.read(16)
-    while chunk != b"":
-        if chunk[0] == 0xFF and chunk[1] == 0x00:
-            block_offsets.append(((f.tell()-16)))
-            #print(hex(f.tell()-16))
-        chunk = f.read(16)
-    #print(block_offsets)
-
-    for i in range(tex_amount):
-        f.seek(block_offsets[i])
-        block_number = 0 + i
-        block_number = chr(block_number)
-        block_number = bytes(block_number, ("utf-8"))
-        f.write(block_number)
-
-    f.seek(0)
-    for i in range(tex_amount):
-        f.seek(32 + (i*4))
-        block_grab = block_offsets[i]
-        block_grab_1 = struct.pack("<I", block_grab)
-        f.write(block_grab_1)
-
-
-
-    #closing 16 colours
-    a64x64_16.close()
-    a128x64_16.close()
-    a128x128_16.close()
-    a128x256_16.close()
-    a256x128_16.close()
-    a256x256_16.close()
-    a256x512_16.close()
-    a512x256_16.close()
-    a512x512_16.close()
-    #closing 256 colours
-    a64x64_256.close()
-    a128x64_256.close()
-    a128x128_256.close()
-    a128x256_256.close()
-    a256x128_256.close()
-    a256x256_256.close()
-    a256x512_256.close()
-    a512x256_256.close()
-    a512x512_256.close()
-    a512x8_256.close()
-    #closes amt
+    f.write(t_copy)
+    t_copy = temp2.read()
+    f.write(t_copy)
+    t_copy = temp3.read()
+    f.write(t_copy)
     f.close()
-    print("AMT Creation Complete!")
     print("")
-    print("If you want to change any of the textures on the AMT to a shader,")
-    print("Use Nexus-Sama's guide on to how to correct any texture blocks as shaders,")
-    print("This will be fixed in a later update but for now, please do it manually, thanks!")
-    print("")
+    print("Completed!")
+
+    # deletes temp files
+    tn1 = "Files\z.bin"
+    temp1 = open(tn1, "r+b")
+    temp1.close()
+    tn2 = "Files\z2.bin"
+    temp2 = open(tn2, "r+b")
+    temp2.close()
+    tn3 = "Files\z3.bin"
+    temp3 = open(tn3, "r+b")
+    temp3.close()
+    os.remove(tn1)
+    os.remove(tn2)
+    os.remove(tn3)
 
 
-#this calculates how many lines are needed for 
 def tex_line_calc(tex_amount):
     print("calulating lines required...")
 
     line_break = 4
-    
+
     tex_am_lines = math.ceil(tex_amount / line_break)
 
     return tex_am_lines
 
 
+def index_offset(index_o,index_o3):
+    index_o = index_o.hex()
+    index_o = int(index_o, 16)
+    index_o = struct.pack('<L', index_o)
+    index_o = index_o.hex()
+    index_o = int(index_o, 16)+index_o3
+    index_o = struct.pack('<L', index_o)
+    print(index_o.hex())
+    return index_o
 
-def block_256_pick(col_256, choice):
+
+def index_offset2(index_o3, switch, index_list_size, header_size):
+    if switch == 0:
+        index_o3 = index_o3 + 48
+    elif switch == 1:
+        index_o3 = index_o3 + 1
+    elif switch == 1:
+        index_o3 = index_o3 + index_list_size + header_size
+    return index_o3
+
+
+def next_index(n_index):
+    n_index = n_index + 48
+    return n_index
+
+
+def index_block_pick(col_16, col_256, choice, temp3):
+    if choice == 9 or choice == 10:
+        index_block = col_16[choice]
+        index_block.seek(0)
+        index_block_copy = index_block.read(48)
+        index_block.seek(48)
+        index_data_copy = index_block.read()
+        temp3.write(index_data_copy)
+    else:
+        print("")
+        print("16 colors or 256 colors?(1/2)")
+        color = input("")
+        if color == "16" or color == "1":
+            index_block = col_16[choice]
+            index_block.seek(0)
+            index_block_copy = index_block.read(48)
+            index_block.seek(48)
+            index_data_copy = index_block.read()
+            temp3.write(index_data_copy)
+        elif color == "256" or color == "2":
+            index_block = col_256[choice]
+            index_block.seek(0)
+            index_block_copy = index_block.read(48)
+            index_block.seek(48)
+            index_data_copy = index_block.read()
+            temp3.write(index_data_copy)
+        else:
+            print("Incorrect value. Please choose how many colors next time.")
+            print("Error")
+            exit()
+    print("")
     print("adding texture...")
-
-    tex_block = col_256[choice]
-
-    tex_block.seek(48)
-
-    tex_block_copy = tex_block.read(48)
-
-    return tex_block_copy
+    return index_block_copy
 
 
+def previous_offset(prev, temp2, prev_offset, total):
 
+    temp2.seek((temp2.tell()-4))
+    total = temp2.read(4)
+    total = total.hex()
+    total = int(total, 16)
+    total = struct.pack('<L', total)
+    total = total.hex()
+    total = int(total, 16)
 
+    prev = temp2.read(4)
+    prev = prev.hex()
+    prev = int(prev, 16)
+    prev = struct.pack('<L', prev)
+    prev = prev.hex()
+    prev = int(prev, 16)
+    prev_offset = prev + 32 + total
 
-def block_16_pick(col_16, choice):
-    print("adding texture...")
+    prev_offset = struct.pack('<L', prev_offset)
+    temp2.seek((temp2.tell() + 24))
+    temp2.write(prev_offset)
 
-    tex_block = col_16[choice]
+    # test
+    temp2.seek((temp2.tell() - 4))
+    total = temp2.read(4)
+    total = total.hex()
+    total = int(total, 16)
+    total = struct.pack('<L', total)
+    total = total.hex()
+    total = int(total, 16)
 
-    tex_block.seek(48)
+    prev = temp2.read(4)
+    prev = prev.hex()
 
-    tex_block_copy = tex_block.read(48)
+    prev = int(prev, 16)
+    prev = struct.pack('<L', prev)
+    prev = prev.hex()
+    prev = int(prev, 16)
+    prev_offset2 = prev + 32 + total
 
-    return tex_block_copy
+    prev_offset2 = struct.pack('<L', prev_offset2)
+    print(temp2.seek((temp2.tell() + 8)))
+    temp2.write(prev_offset2)
 
+    return prev_offset2
 
-
-def data_16_pick(col_16, choice):
-
-    tex_data = col_16[choice]
-
-    tex_data.seek(96)
-
-    tex_data_copy = tex_data.read(41000)
-
-    return tex_data_copy
 
 def again():
-    yn = input("Load another? (Y/N)")
+    yn = input("Would you like to create another? (Y/N)")
     yn = yn.lower()
-    yn = yn[0:1]
-    if yn == "y":
+    if yn == "y" or yn == "yes":
         main()
         again()
     else:
+        print("")
+        print("AMT creator by: Nexus-sama")
+        print("credit to SamuelDBZMA&M for some parts")
+        print("Follow me on Twitter @NexusTheModder")
+        print("")
         kill = input("press enter to close")
 
+
 main()
-
 again()
-
 
 exit()
