@@ -9,8 +9,9 @@ import os
 
 def main():
     print("")
-    print("AMT name? (add extension)")
+    print("AMO name? (add extension)")
     x = input("")
+    x = x.replace("\"", "")
     f = open(x, "r+b")
 
     # Copying files needed
