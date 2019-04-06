@@ -245,6 +245,12 @@ def main():
     #print(f_new_names)
 
     #placing the axis on the axis lines
+
+    #new text file for pastingin new data
+    text_file = open("sb2_axis_locs.txt", "w+")
+
+
+
     types = ["number", "text"]
     print(types)
     insert_type = input("Choose how you want to insert axis: ")
@@ -266,6 +272,8 @@ def main():
             g_choice = int(input(""))
 
 
+            uuu = g_new_names[g_choice]
+
             #picks the axis location based on the choice
             ith = g_axis_pos[g_choice]
             print(ith)
@@ -284,6 +292,14 @@ def main():
             temp1.seek(0)
             temp1.seek(f_axis_line_pos[f_choice]+8)
             temp1.write(g_choice)
+            
+            #writes data to text file for people who want to further use
+            
+            vvv = hex_to_int(g_choice)
+            vvv = hex(vvv)
+            vvv = vvv.replace("0x", "")
+                              
+            text_file.write(str(uuu) + " = " + str(vvv) + "\n")
 
             print("Added!")
             print("Continue? (y/n)")
@@ -297,41 +313,64 @@ def main():
 
         
     if insert_type == "text":
-        print(g_new_names)
-        print("Choose an axis from the add-on model")
-        g_choice = input("")
-        g_choice = g_choice.upper()
-
-        while g_choice not in g_new_names:
-            print("Not a valid axis, try again.")
+        cancel = False
+        while cancel != True:
+            print(g_new_names)
+            print("Choose an axis from the add-on model")
             g_choice = input("")
+            g_choice = g_choice.upper()
 
-        g_cho_pos = int(g_new_names.index(g_choice))
 
-        ith = g_axis_pos[g_cho_pos]
-        print(ith)
-        g_choice = int_to_hex(ith)
-        print(g_choice)
-            
+            while g_choice not in g_new_names:
+                print("Not a valid axis, try again.")
+                g_choice = input("")
+                g_choice = g_choice.upper()
 
-        print(f_new_names)
-        print("Choose an axis from the add-on model")
-        f_choice = input("")
-        f_choice = f_choice.upper()
+            uuu = g_choice
 
-        while f_choice not in f_new_names:
-            print("Not a valid axis, try again.")
+            g_cho_pos = int(g_new_names.index(g_choice))
+
+
+            ith = g_axis_pos[g_cho_pos]
+            print(ith)
+            g_choice = int_to_hex(ith)
+            print(g_choice)
+
+            vvv = hex_to_int(g_choice)
+            vvv = hex(vvv)
+            vvv = vvv.replace("0x", "")
+
+            print(f_new_names)
+            print("Choose an axis from the add-on model")
             f_choice = input("")
+            f_choice = f_choice.upper()
 
-        f_cho_pos = int(f_new_names.index(f_choice))
+            while f_choice not in f_new_names:
+                print("Not a valid axis, try again.")
+                f_choice = input("")
 
-        
-        temp1.seek(0)
-        temp1.seek(f_axis_line_pos[f_cho_pos]+8)
-        temp1.write(g_choice)
+            f_cho_pos = int(f_new_names.index(f_choice))
+
+            
+            temp1.seek(0)
+            temp1.seek(f_axis_line_pos[f_cho_pos]+8)
+            temp1.write(g_choice)
+            
+            #writes data to text file for people who want to further use
+            text_file.write(str(uuu) + " = " + str(vvv) + "\n")
+
+            print("Added!")
+            print("Continue? (y/n)")
+            cho = input("")
+            cho = cho.lower()
+            cho = cho[0:1]
+            if cho == "y":
+                cancel = False
+            if cho == "n":
+                cancel = True
     
 
-
+    text_file.close()
     #-Write to a new made file for realises
     print("Final Touches...")
     #file size
@@ -382,7 +421,7 @@ def main():
 
     new_file = open("new_file.bin", "w+b")
     new_file.write(ccc)
-
+    print("Complete!")
     
     
     
