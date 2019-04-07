@@ -66,6 +66,7 @@ def main():
 
     # Writes header
     temp1.write(header)
+
     # Will read the total amount of textures in AMT
     f.seek(16)
     hti = f.read(4)
@@ -74,8 +75,22 @@ def main():
     ith = tex_amount
     tex_am_value = int_to_hex(ith)
     temp1.write(tex_am_value)
+
+    # amount of blanks in header
+    tex_amount_0 = 0
+    offset2 = 32
+    for i in range(tex_amount):
+        f.seek(offset2)
+        hti = f.read(4)
+        offset = hex_to_int(hti)
+        if offset != 0:
+            "Nothing"
+        else:
+            tex_amount_0 = tex_amount_0 + 1
+        offset2 = offset2 + 4
+
     temp1.seek(32)
-    tex_am_lines = tex_line_calc(tex_amount)
+    tex_am_lines = tex_line_calc(tex_amount - tex_amount_0)
     for i in range(tex_am_lines):
         temp1.write(line)
 
@@ -88,23 +103,38 @@ def main():
     index_o3 = 0
     ith = hex_to_int(hti) + index_o3
     index_o2 = int_to_hex(ith)
-    for i in range(tex_amount):
+    for i in range(tex_amount - tex_amount_0):
         temp1.write(index_o2)
         index_o3 = index_offset2(index_o3, switch, index_list_size, header_size)
         ith = hex_to_int(hti) + index_o3
         index_o2 = int_to_hex(ith)
 
     # Copying old index shit
+    tex_amount_0 = 0
+    offset2 = 32
+    for i in range(tex_amount):
+        f.seek(offset2)
+        hti = f.read(4)
+        offset = hex_to_int(hti)
+        if offset != 0:
+            f.seek(offset)
+            data = f.read(48)
+            temp2.write(data)
+        else:
+            tex_amount_0 = tex_amount_0 + 1
+        offset2 = offset2 + 4
+
+    # Updates amount of tex in header
+    temp1.seek(16)
+    ith = tex_amount - tex_amount_0
+    t_copy = int_to_hex(ith)
+    temp1.write(t_copy)
+
+    # Copying old TEX/PAL shit
     f.seek(32)
     hti = f.read(4)
     offset = hex_to_int(hti)
-    f.seek(offset)
-    data = tex_amount * 48
-    data = f.read(data)
-    temp2.write(data)
-
-    # Copying old TEX/PAL shit
-    f.seek(offset + 4 + 16)
+    f.seek(offset + 20)
     hti = f.read(4)
     offset = hex_to_int(hti)
     f.seek(offset)
@@ -129,7 +159,7 @@ def main():
     prev_offset = int_to_hex(ith)
     temp2.seek((temp2.tell() + 8))
     temp2.write(prev_offset)
-    for i in range(tex_amount - 1):
+    for i in range(tex_amount - 1 - tex_amount_0):
         previous_offset(prev, temp2, prev_offset, total)
 
     # Assembles new AMT
@@ -148,7 +178,7 @@ def main():
     offset = hex_to_int(hti)
     temp3.seek(0)
 
-    for i in range(tex_amount):
+    for i in range(tex_amount - tex_amount_0):
         temp1.seek(offset+20)
         hti = temp1.read(4)
         offset2 = hex_to_int(hti)
@@ -196,16 +226,31 @@ def main():
     hti = temp1.read(4)
     offset = hex_to_int(hti)
     temp1.seek(offset)
-    for i in range(tex_amount):
+    for i in range(tex_amount - tex_amount_0):
         temp1.seek(temp1.tell() + 25)
-        aa = temp1.read(1)
-        if aa == b'\xAA':
-            temp1.seek(temp1.tell() - 1)
-            temp1.write(b'\x80')
-        if aa == b'\x2A':
-            temp1.seek(temp1.tell() - 1)
-            temp1.write(b'\x20')
-        temp1.seek(temp1.tell() + 22)
+        aa = temp1.read(2)
+        if aa == b'\xAA\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x80\x00')
+        if aa == b'\x2A\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x20\x00')
+        if aa == b'\x54\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x40\x00')
+        if aa == b'\x0A\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x08\x00')
+        if aa == b'\x04\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x02\x00')
+        if aa == b'\x15\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x10\x00')
+        if aa == b'\x54\x01':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x00\x01')
+        temp1.seek(temp1.tell() + 21)
 
     # Opens the new AMT in GGS
     temp1.close()
@@ -222,16 +267,31 @@ def main():
     hti = temp1.read(4)
     offset = hex_to_int(hti)
     temp1.seek(offset)
-    for i in range(tex_amount):
+    for i in range(tex_amount - tex_amount_0):
         temp1.seek(temp1.tell() + 25)
-        aa = temp1.read(1)
-        if aa == b'\x80':
-            temp1.seek(temp1.tell() - 1)
-            temp1.write(b'\xAA')
-        if aa == b'\x20':
-            temp1.seek(temp1.tell() - 1)
-            temp1.write(b'\x2A')
-        temp1.seek(temp1.tell() + 22)
+        aa = temp1.read(2)
+        if aa == b'\x80\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\xAA\x00')
+        if aa == b'\x20\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x2A\x00')
+        if aa == b'\x40\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x54\x00')
+        if aa == b'\x08\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x0A\x00')
+        if aa == b'\x02\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x04\x00')
+        if aa == b'\x10\x00':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x15\x00')
+        if aa == b'\x00\x01':
+            temp1.seek(temp1.tell() - 2)
+            temp1.write(b'\x54\x01')
+        temp1.seek(temp1.tell() + 21)
 
     # Updates temp3's data
     temp1.seek(32)
@@ -239,7 +299,7 @@ def main():
     offset = hex_to_int(hti)
     temp3.seek(0)
 
-    for i in range(tex_amount):
+    for i in range(tex_amount - tex_amount_0):
         temp1.seek(offset + 20)
         hti = temp1.read(4)
         offset2 = hex_to_int(hti)
@@ -261,7 +321,7 @@ def main():
         temp3.write(t_copy)
 
         offset = offset + 48
-    
+
     # Saves new data into your bin
     f.seek(32)
     hti = f.read(4)
