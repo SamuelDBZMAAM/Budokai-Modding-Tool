@@ -29,6 +29,8 @@ def create_amt():
     header = header.read()
     line = open("Files/AMT/line.bin", "r+b")
     line = line.read()
+    rpt = open("Files/AMT/RPT.bin", "r+b")
+    rpt = rpt.read()
 
     a128x128_16 = open("Files/AMT/SB2_128x128.bin", "r+b")          # 16 color
     a256x256_16 = open("Files/AMT/SB2_256x256.bin", "r+b")
@@ -62,6 +64,8 @@ def create_amt():
 
     # Writes header
     temp1.write(header)
+    temp1.seek(8)
+    temp1.write(b'\x01')
     print("How many textures?")
     tex_amount = int(input(""))
     temp1.seek(16)
@@ -174,6 +178,7 @@ def create_amt():
     f.write(t_copy)
     t_copy = temp3.read()
     f.write(t_copy)
+    f.write(rpt)
     f.close()
     print("")
     print("Completed!")
@@ -296,10 +301,31 @@ def edit_amt():
     offset = struct.pack('<L', offset)
     offset = offset.hex()
     offset = int(offset, 16)
+    f.seek(offset-12)
+
+    total = f.read(4)
+    total = total.hex()
+    total = int(total, 16)
+    total = struct.pack('<L', total)
+    total = total.hex()
+    total = int(total, 16)
+
+    total2 = f.read(4)
+    total2 = total2.hex()
+    total2 = int(total2, 16)
+    total2 = struct.pack('<L', total2)
+    total2 = total2.hex()
+    total2 = int(total2, 16)
+    total = total + total2 - offset
     f.seek(offset)
-    data = f.read()
+    data = f.read(total)
     temp3.write(data)
+    # Copying RPT data
+    rpt = f.read()
     f.seek(0)
+
+    print("DEBUG: Total - " + str(total))
+    input("WAITING")
 
     print("")
     print(tex_list)
@@ -379,6 +405,9 @@ def edit_amt():
     temp2 = open(tn2, "r+b")
     temp3.close()
     temp3 = open(tn3, "r+b")
+    f.close()
+    os.remove(x)
+    f = open(x, "w+b")
     t_copy = temp1.read()
     f.seek(0)
     f.write(t_copy)
@@ -386,6 +415,7 @@ def edit_amt():
     f.write(t_copy)
     t_copy = temp3.read()
     f.write(t_copy)
+    f.write(rpt)
     f.close()
     print("")
     print("Completed!")
