@@ -8,7 +8,9 @@ c = "Files/amb.bin"
 r = "Files/amb - copy.bin"
 n = "new_amb.bin"
 m = input("Name of AMO file: ")
+m = m.replace("\"", "")
 t = input("Name of AMT file: ")
+t = t.replace("\"", "")
 
 def main():
     offsets = []

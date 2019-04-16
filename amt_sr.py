@@ -11,6 +11,7 @@ def main():
     print("AMT name (with extension):")
     #opens AMT
     x = input("")
+    x = x.replace("\"", "")
     f = open(x, "r+b")
     chunk = f.read(16)
     offsets = []

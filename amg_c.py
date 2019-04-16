@@ -20,6 +20,7 @@ def main():
     amg_choice = ["b3", "sb2"]
     
     print("Is this AMG for B3 or SB2?")
+    print("SB2 is not an option, B3 only, sorry!")
     pick_choice = input("")
     pick_choice = pick_choice.lower()
 

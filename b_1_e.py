@@ -5,6 +5,7 @@
 
 def main():
     y = input("Insert file: ")
+    y = y.replace("\"", "")
     f = open(y, "r+b")
     chunk = f.read(16)
     offsets = []

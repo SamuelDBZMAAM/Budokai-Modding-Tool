@@ -5,7 +5,9 @@ import struct
 import math
 import os
 
-
+print("As well as doing SB2 Model combining...")
+print("This tool doubles as a multi-axis addition for B3!")
+print("Make sure each axis has a name on the AMG before adding onto B3!")
 
 def main():
     hti = 0
@@ -341,7 +343,7 @@ def main():
             vvv = vvv.replace("0x", "")
 
             print(f_new_names)
-            print("Choose an axis from the add-on model")
+            print("Choose an axis from the base model")
             f_choice = input("")
             f_choice = f_choice.upper()
 

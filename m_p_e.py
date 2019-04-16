@@ -2,18 +2,84 @@
 #Purpose of this sub-program - To edit the model parts of a character file i.e.
 #Editing the texture number, shader number, border number and model type
 
-options = ["Border", "Shader Fix"]
+options = ["Border", "Shader Fix", "Model Part Extraction"]
 border_option = ["r", "a"]
+print("You can shorten the phrases to one letter 'Border' = 'b', 'shader fix' = 'sf', and so on")
+
+
+
+def mpe(f):
+    ##code for model part extractor
+    print("")
+    counter = 0
+    mpe_offsets = []
+    print("Gathering model part locations...")
+    chunk = f.read(16)
+    while chunk != b"":
+        if chunk[0] == 0xB5 and chunk[1] == 0x01:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xB4 and chunk[1] == 0x01:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xB5 and chunk[1] == 0x21:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xB4 and chunk[1] == 0x11:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xB4 and chunk[1] == 0x21:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xBD and chunk[1] == 0x01:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xBD and chunk[1] == 0x11:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        if chunk[0] == 0xFF and chunk[1] == 0xFF:
+            mpe_offsets.append(((f.tell()-16)))
+            counter += 1
+        chunk = f.read(16)
+    print("Model parts located!")
+    print("")
+    mep_op = ["Texture Swap", "Shader Swap", "Invisible", "MPExtractor"]
+    print(mep_op)
+    print("What would you like to do?")
+    ch = input("")
+    if ch == "Texture Swap" or ch == "ts":
+        print("")
+        print(mpe_offsets)
+        print("There are", counter, "many model parts, give me a texture number to search through and further options shall be shown")
+        #add that shiiiettt
+        
+    if ch == "Shader Swap" or ch == "ss":
+        print("building")
+        print("There are", counter, "many model parts, give me a texture number to search through and further options shall be shown")
+        #and this
+        
+    if ch == "Invisible" or ch == "i":
+        print("building")
+        print("There are", counter, "many model parts, give me a texture number to search through and further options shall be shown")
+        #this toooo
+        
+    if ch == "MPExtractor" or ch == "mpe":
+        print("building")
+        print("There are", counter, "many model parts, give me a texture number to search through and further options shall be shown")
+        #yeetus
+        
+    
+        
+
 
 def main():
-    y = input("Insert name of file: ")
+    y = input("Insert name of file (AMO0 Only): ")
+    y = y.replace("\"", "")
     f = open(y, "r+b")
     print("")
     print(options)
     print("What would you like to do? ")
     x = input("")
-    while x not in options:
-        x = input("That is not a valid option, please select from above: ")
     if x == "Border" or x == "b":
         #blah blah
         choice = input("Remove or Add borders? (r/a): ")
@@ -89,6 +155,14 @@ def main():
         print("Replaced", counter, "of FFs with 0" + str(shader), "00 00 00")
         print("")
         f.close()
+
+    if x == "Model Part Extraction" or x == "mpe":
+        mpe(f)
+
+    else:
+        print("not an option, please try again")
+        f.close()
+        again()
 
         
 def again():

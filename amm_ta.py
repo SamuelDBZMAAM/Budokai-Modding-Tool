@@ -23,6 +23,7 @@ def main():
     # opens BSK
     print("BSK name (with extension):")
     x = input("")
+    x = x.replace("\"", "")
     f = open(x, "r+b")
     print("Which tail animation would you like to use?")
     print("SSJ4, Cell, Frieza, Cooler?(S/C/F/CO)")
