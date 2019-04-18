@@ -13,8 +13,9 @@ import os
 
 def main():
     print("AMG Creation Tool")
-    print("Insert the name of AMG you want: ")
+    print("Insert the name of AMG you will create: ")
     x = input("")
+    x = x.replace("\"", "")
     f = open(x, "w+b")
 
     amg_choice = ["b3", "sb2"]
@@ -110,6 +111,15 @@ def main():
             mp_chunk_locs.append(f.seek(0,2))
             mp_ch_locs.append(f.seek(0,2))
             f.write(b3am1)
+            f.seek(0)
+            
+            mp_other_chunk = ((int(f.seek(0,2)) - 16))
+            other_chunk_loc = int(f.seek(0,2))
+            
+            f.seek(other_chunk_loc - 28)
+            ith = mp_other_chunk
+            to_write = int_to_hex(ith)
+            f.write(to_write)
             print("How many model parts are there?")
             b3am2_amnt = int(input(""))
             new_amnt = int(((math.ceil(b3am2_amnt/4))))
@@ -123,6 +133,7 @@ def main():
                 mp_lcs.append(f.seek(0,2))
                 print("Insert Model Part:")
                 y = input("")
+                y = y.replace("\"", "")
                 new_part = open(y, "r+b")
                 npr = new_part.read()
                 f.write(npr)
