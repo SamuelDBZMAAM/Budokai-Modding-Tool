@@ -49,7 +49,7 @@ def main():
             size_check = temp1.read(4)
             if size_check == b'\x40\x00\x40\x00':
                 temp1.seek(new_offset + 12)
-                temp1.write(b'\x00\x09\x03\x00')
+                temp1.write(b'\x09\x00\x03\x00')
                 temp1.seek(new_offset + 16)
                 temp1.write(b'\x00\x02\x08\x00')
                 temp1.seek(new_offset + 20)
