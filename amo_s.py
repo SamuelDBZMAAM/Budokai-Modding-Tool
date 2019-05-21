@@ -162,7 +162,7 @@ def again():
         again()
     else:
         print("")
-        print("AMT creator by: Nexus-sama")
+        print("AMO model separator by: Nexus-sama")
         print("credit to SamuelDBZMA&M for some parts")
         print("Follow me on Twitter @NexusTheModder")
         print("")
