@@ -11,6 +11,10 @@ def main():
     print("SLUS or SLES?(1/2)")
     type = input("")
     type = type.lower()
+    while type != "1" and type != "2" and type != "sles" and type != "slus":
+        print("Please choose between SLUS or SLES. (1/2)")
+        type = input("")
+        type = type.lower()
     print("Drag and drop your SLXS")
     x = input("")
     x = x.replace("\"", "")
@@ -168,7 +172,6 @@ def calculate_condition(condition):
     if condition == b"\xFF\xFF":
         condition = "Tutorial or Fighter's Road battle"
     return condition
-
 
 
 def calculate_stage(stage):
