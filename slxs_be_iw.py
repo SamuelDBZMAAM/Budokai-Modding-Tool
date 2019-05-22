@@ -67,7 +67,7 @@ def main():
         # Locating battle chosen and copying it to temp
         print("Input the battle number you're to edit.")
         b_num = int(input(""))
-        while b_num >= 201:
+        while b_num > 201:
             print("Number is too large. there are only 201 battles available. Please try another number.")
             b_num = int(input(""))
         b_num = (b_num - 1) * 96
@@ -79,17 +79,17 @@ def main():
         print("")
         gather_info(temp1)
         print("Is this the correct one?(y/n)")
-        q = input("")
+        q = input("").lower()
         while q != "y":
             while q != "n" and q != "y":
                 print("Please answer the question.")
-                q = input("")
+                q = input("").lower()
             if q == "n":
                 print("")
                 print("Gathering info again...")
                 print("Input the battle number you're to edit.")
                 b_num = int(input(""))
-                while b_num >= 201:
+                while b_num > 201:
                     print("Number is too large. there are only 201 battles available. Please try another number.")
                     b_num = int(input(""))
                 b_num = (b_num - 1) * 96
@@ -114,7 +114,7 @@ def main():
         print("Please choose a battle condition for this fight.")
         print("Type the number next to your choice to select it.")
         condition = int(input(""))
-        while condition >= int(len(condition_list)):
+        while condition > int(len(condition_list)):
             print("Invalid, try again")
             condition = int(input(""))
         print(condition_list[condition-1] + " was selected...")
@@ -127,7 +127,7 @@ def main():
         print("")
         print("Please choose a stage for this fight.")
         stage = int(input(""))
-        while stage >= int(len(stage_list)):
+        while stage > int(len(stage_list)):
             print("Invalid, try again")
             stage = int(input(""))
         print(stage_list[stage - 1] + " was selected...")
@@ -138,7 +138,7 @@ def main():
         print("")
         print("Select the music to play in the background. There are only 39 tracks.")
         music = int(input(""))
-        while music >= 39:
+        while music > 39:
             print("Invalid, only 39 tracks available. Please choose a number between 1-39.")
             music = int(input(""))
         print("Music Track " + str(music) + " selected.")
@@ -153,7 +153,7 @@ def main():
         print("")
         print("Please choose a timer for this fight.")
         timer = int(input(""))
-        while timer >= int(len(timer_list)):
+        while timer > int(len(timer_list)):
             print("Invalid, try again")
             timer = int(input(""))
         print(timer_list[timer - 1] + " was selected...")
@@ -163,6 +163,11 @@ def main():
         print("")
         print("")
         print("Player settings:")
+        # Removing capsule limitations
+        temp1.seek(30)
+        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF')
+        temp1.seek(44)
+        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF')
         # Character
         temp1.seek(20)
         print("")
@@ -171,7 +176,7 @@ def main():
         print("Please choose the player's character.")
         print("Type the number next to your choice to select it.")
         char = int(input(""))
-        while char >= int(len(char_list)):
+        while char > int(len(char_list)):
             print("Invalid, try again")
             char = int(input(""))
         print(char_list[char - 1] + " was selected...")
@@ -192,6 +197,12 @@ def main():
         print("")
         print("Type the number of which form the player starts at. 0 being base form, 1 being 1st form, and so on.")
         form_s = int(input(""))
+        # Adds transform capsule if forced to use form
+        if form_s >= 1:
+            temp1.seek(46)
+            t_copy = form_capsule(char)
+            temp1.write(t_copy)
+            temp1.seek(24)
         print("The player starts on form number " + str(form_s))
         ith = form_s
         ith = int_to_hex(ith)
@@ -218,15 +229,15 @@ def main():
         ith = int_to_hex(ith)
         form_c = offset_fix2(ith)
         temp1.write(form_c)
-        # Removing capsule limitations
-        temp1.seek(30)
-        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF')
-        temp1.seek(44)
-        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF')
 
         print("")
         print("")
         print("Enemy settings")
+        # Removing capsule limitations
+        temp1.seek(68)
+        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF')
+        temp1.seek(82)
+        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF')
         # Character
         temp1.seek(58)
         print("")
@@ -235,7 +246,7 @@ def main():
         print("Please choose the enemy's character.")
         print("Type the number next to your choice to select it.")
         char = int(input(""))
-        while char >= int(len(char_list)):
+        while char > int(len(char_list)):
             print("Invalid, try again")
             char = int(input(""))
         print(char_list[char - 1] + " was selected...")
@@ -256,6 +267,12 @@ def main():
         print("")
         print("Type the number of which form the enemy starts at. 0 being base form, 1 being 1st form, and so on.")
         form_s = int(input(""))
+        # Adds transform capsule if forced to use form
+        if form_s >= 1:
+            temp1.seek(84)
+            t_copy = form_capsule(char)
+            temp1.write(t_copy)
+            temp1.seek(62)
         print("The enemy starts on form number " + str(form_s))
         ith = form_s
         ith = int_to_hex(ith)
@@ -282,11 +299,7 @@ def main():
         ith = int_to_hex(ith)
         form_c = offset_fix2(ith)
         temp1.write(form_c)
-        # Removing capsule limitations
-        temp1.seek(68)
-        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF')
-        temp1.seek(82)
-        temp1.write(b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF')
+        print("---------------EDITING COMPLETED---------------")
 
         # Showing the new data
         print("")
@@ -865,6 +878,132 @@ def calculate_character2(char):
 
     return char
 
+
+def form_capsule(char):
+    if char == b'\x00':
+        char = b'\x30\x01'
+    if char == b'\x02':
+        char = b'\x3C\x01'
+    if char == b'\x03':
+        char = b'\x45\x01'
+    if char == b'\x04':
+        char = b'\x4E\x01'
+    if char == b'\x05':
+        char = b'\xFF\xFF'
+    if char == b'\x06':
+        char = b'\x54\x01'
+    if char == b'\x07':
+        char = b'\x5E\x01'
+    if char == b'\x08':
+        char = b'\x6D\x01'
+    if char == b'\x09':
+        char = b'\x74\x01'
+    if char == b'\x0A':
+        char = b'\x7C\x01'
+    if char == b'\x0B':
+        char = b'\x85\x01'
+    if char == b'\x0C':
+        char = b'\xFF\xFF'
+    if char == b'\x0D':
+        char = b'\xFF\xFF'
+    if char == b'\x0E':
+        char = b'\x8C\x01'
+    if char == b'\x0F':
+        char = b'\xFF\xFF'
+    if char == b'\x12':
+        char = b'\xFF\xFF'
+    if char == b'\x13':
+        char = b'\xFF\xFF'
+    if char == b'\x14':
+        char = b'\xFF\xFF'
+    if char == b'\x15':
+        char = b'\xFF\xFF'
+    if char == b'\x1B':
+        char = b'\x97\x01'
+    if char == b'\x1C':
+        char = b'\xFF\xFF'
+    if char == b'\x1D':
+        char = b'\xFF\xFF'
+    if char == b'\x1E':
+        char = b'\xFF\xFF'
+    if char == b'\x20':
+        char = b'\xFF\xFF'
+    if char == b'\x21':
+        char = b'\x9E\x01'
+    if char == b'\x22':
+        char = b'\xFF\xFF'
+    if char == b'\x23':
+        char = b'\xFF\xFF'
+    if char == b'\x24':
+        char = b'\xFF\xFF'
+    if char == b'\x25':
+        char = b'\xA4\x01'
+    if char == b'\x26':
+        char = b'\xAC\x01'
+    if char == b'\x27':
+        char = b'\xFF\xFF'
+    if char == b'\x28':
+        char = b'\xB4\x01'
+    if char == b'\x29':
+        char = b'\xBC\x01'
+    if char == b'\x2A':
+        char = b'\xFF\xFF'
+    if char == b'\x2C':
+        char = b'\x36\x01'
+    if char == b'\x2D':
+        char = b'\xFF\xFF'
+    if char == b'\x2E':
+        char = b'\xFF\xFF'
+    if char == b'\x2F':
+        char = b'\xFF\xFF'
+    if char == b'\x30':
+        char = b'\xFF\xFF'
+    if char == b'\x36':
+        char = b'\x65\x01'
+    if char == b'\x37':
+        char = b'\xFF\xFF'
+    if char == b'\x38':
+        char = b'\xFF\xFF'
+    if char == b'\x39':
+        char = b'\xFF\xFF'
+    if char == b'\x40':
+        char = b'\xFF\xFF'
+    if char == b'\x44':
+        char = b'\xFF\xFF'
+    if char == b'\x46':
+        char = b'\xFF\xFF'
+    if char == b'\x4A':
+        char = b'\xFF\xFF'
+    if char == b'\x4E':
+        char = b'\xFF\xFF'
+    if char == b'\x4F':
+        char = b'\xFF\xFF'
+    if char == b'\x54':
+        char = b'\xFF\xFF'
+    if char == b'\x5B':
+        char = b'\xFF\xFF'
+    if char == b'\x5C':
+        char = b'\xFF\xFF'
+    if char == b'\x5D':
+        char = b'\xFF\xFF'
+    if char == b'\x5E':
+        char = b'\xFF\xFF'
+    if char == b'\x5F':
+        char = b'\xFF\xFF'
+    if char == b'\x60':
+        char = b'\xFF\xFF'
+    if char == b'\x61':
+        char = b'\xFF\xFF'
+    if char == b'\x62':
+        char = b'\xFF\xFF'
+    if char == b'\x63':
+        char = b'\xFF\xFF'
+    if char == b'\x64':
+        char = b'\xFF\xFF'
+    if char == b'\x66':
+        char = b'\xFF\xFF'
+
+    return char
 
 def again():
     yn = input("Would you like to load another? (Y/N)")
