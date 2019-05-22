@@ -34,6 +34,10 @@ def main():
         battle_num = hex_to_int(hti)
         y.write("Battle Number " + str(battle_num) + " --------------\r")
         # Grabbing stage setup
+        f.seek(offset+2)                        # Battle Condition
+        condition = f.read(2)
+        condition = calculate_condition(condition)
+        y.write("Battle Condition - " + str(condition) + "\r")
         f.seek(offset+8)                        # Stage
         stage = f.read(1)
         stage = calculate_stage(stage)
@@ -150,6 +154,21 @@ def offset_fix(hti):
     os.remove(tn1)
 
     return hti
+
+
+def calculate_condition(condition):
+    if condition == b"\x00\x00":
+        condition = "Defeat the enemy"
+    if condition == b"\x01\x00":
+        condition = "Reduce the enemy's health to a certain level or survive until time runs out"
+    if condition == b"\x02\x00":
+        condition = "Lose by ring out"
+    if condition == b"\x03\x00":
+        condition = "Don't attack the enemy, survive until time runs out"
+    if condition == b"\xFF\xFF":
+        condition = "Tutorial or Fighter's Road battle"
+    return condition
+
 
 
 def calculate_stage(stage):
