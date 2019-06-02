@@ -159,6 +159,39 @@ def main():
         print(timer_list[timer - 1] + " was selected...")
         timer = calculate_timer2(timer)
         temp1.write(timer)
+        # Money earn for winning
+        temp1.seek(14)
+        print("")
+        print("How much money can be earned for winning? Max amount is 999,900")
+        print("your number will round up to the nearest multiple of 100.")
+        zeni_w = int(input(""))
+        while zeni_w > 999900:
+            print("Value too high, please lower it to a number between 1-999,900")
+            zeni_w = int(input(""))
+        while zeni_w % 100 != 0:
+            zeni_w = zeni_w + 1
+        print("Max amount of money earned for winning set to " + str(zeni_w) + "  zeni...")
+        ith = int(zeni_w/100)
+        ith = int_to_hex(ith)
+        zeni_w = offset_fix2(ith)
+        temp1.write(zeni_w)
+
+        # Money earn for losing
+        temp1.seek(16)
+        print("")
+        print("How much is given for losing? Max amount is 999,900")
+        print("your number will round up to the nearest multiple of 100.")
+        zeni_l = int(input(""))
+        while zeni_l > 999900:
+            print("Value too high, please lower it to a number between 1-999,900")
+            zeni_l = int(input(""))
+        while zeni_l % 100 != 0:
+            zeni_l = zeni_l + 1
+        print("Money given for losing set to " + str(zeni_l) + "  zeni...")
+        ith = int(zeni_l / 100)
+        ith = int_to_hex(ith)
+        zeni_l = offset_fix2(ith)
+        temp1.write(zeni_l)
 
         print("")
         print("")
@@ -327,10 +360,10 @@ def main():
             print("Completed!")
 
             # deletes temp files
-            #tn1 = "Files\z.bin"
-            #temp1 = open(tn1, "r+b")
-            #temp1.close()
-            #os.remove(tn1)
+            tn1 = "Files\z.bin"
+            temp1 = open(tn1, "r+b")
+            temp1.close()
+            os.remove(tn1)
 
             cancel = True
 
@@ -360,6 +393,16 @@ def gather_info(temp1):
     timer = temp1.read(1)
     timer = calculate_timer(timer)
     print("Timer - " + str(timer) + "")
+    temp1.seek(14)  # Money earn for winning
+    hti = temp1.read(2)
+    hti = offset_fix(hti)
+    zeni_w = hex_to_int(hti) * 100
+    print("Max amount of money earned for winning - " + str(zeni_w))
+    temp1.seek(16)  # Money earn for losing
+    hti = temp1.read(2)
+    hti = offset_fix(hti)
+    zeni_l = hex_to_int(hti) * 100
+    print("Money earned for losing - " + str(zeni_l))
 
     # Grabbing player character info
     print("--PLAYER DATA--" + "")
@@ -1013,7 +1056,7 @@ def again():
         again()
     else:
         print("")
-        print("SLXS battle list maker by: Nexus-sama")
+        print("SLXS battle editor by: Nexus-sama")
         print("Follow me on Twitter @NexusTheModder")
         print("")
         kill = input("press enter to close")

@@ -42,6 +42,11 @@ def main():
         condition = f.read(2)
         condition = calculate_condition(condition)
         y.write("Battle Condition - " + str(condition) + "\r")
+        f.seek(offset + 6)                      # Ranking
+        rank = f.read(2)
+        rank = calculate_rank(rank)
+        y.write("Ranking List - " + str(rank) + "\r")
+
         f.seek(offset+8)                        # Stage
         stage = f.read(1)
         stage = calculate_stage(stage)
@@ -55,6 +60,17 @@ def main():
         timer = f.read(1)
         timer = calculate_timer(timer)
         y.write("Timer - " + str(timer)+"\r")
+        f.seek(offset + 14)                     # Money earn for winning
+        hti = f.read(2)
+        hti = offset_fix(hti)
+        zeni_w = hex_to_int(hti)*100
+        y.write("Max amount of money earned for winning - " + str(zeni_w) + "\r")
+        f.seek(offset + 16)                     # Money earn for losing
+        hti = f.read(2)
+        hti = offset_fix(hti)
+        zeni_l = hex_to_int(hti) * 100
+        y.write("Money earned for losing - " + str(zeni_l) + "\r")
+
 
         # Grabbing player character info
         y.write("--PLAYER DATA--"+"\r")
@@ -108,7 +124,7 @@ def main():
         hti = f.read(1)
         hti = offset_fix(hti)
         form_c = hex_to_int(hti)
-        y.write("Amount of forms available -  " + str(form_c)+"\r")
+        y.write("Amount of forms available -  " + str(form_c)+"\r\r\r")
 
         offset = offset+96
         y.write("\r")
@@ -173,6 +189,19 @@ def calculate_condition(condition):
         condition = "Tutorial or Fighter's Road battle"
     return condition
 
+
+def calculate_rank(rank):
+    if rank == b"\x00\x00":
+        rank = "None"
+    if rank == b"\x01\x00":
+        rank = "Player Life, Time, Technique"
+    if rank == b"\x02\x00":
+        rank = "Player Life, Enemy Life, Technique"
+    if rank == b"\x03\x00":
+        rank = "Player Life, Enemy Life, Technique"
+    if rank == b"\x04\x00":
+        rank = "Life, Technique"
+    return rank
 
 def calculate_stage(stage):
     if stage == b'\x00':
