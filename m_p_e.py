@@ -2,9 +2,9 @@
 #Purpose of this sub-program - To edit the model parts of a character file i.e.
 #Editing the texture number, shader number, border number and model type
 
-options = ["Border", "Shader Fix", "Model Part Extraction"]
+options = ["Border", "Shader Fix"]
 border_option = ["r", "a"]
-print("You can shorten the phrases to one letter 'Border' = 'b', 'shader fix' = 'sf', and so on")
+#print("You can shorten the phrases to one letter 'Border' = 'b', 'shader fix' = 'sf', and so on")
 
 
 
