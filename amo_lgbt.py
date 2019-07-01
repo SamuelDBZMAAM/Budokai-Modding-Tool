@@ -1,6 +1,18 @@
-#AMG LGBT - amg_lgbt
+5#AMG LGBT - amg_lgbt
 #Purpose: to merge and fuse model parts and animations together using
 #"LGBT" - Lean's Ginyu Bodyswap Technique
+
+##-Insert Model Parts (Work with GGS) DONE
+##-Better way of inserting animations DONE
+##-Option for merging or replacing animations DONE
+##-Correct the length of the first AMG DONE
+##-Organise it more so it is cleaner DONE
+##-Better export to .txt DONE
+
+
+
+
+
 import random
 import struct
 import math
@@ -11,10 +23,12 @@ def main():
     print("")
     print("Please insert the base model (AMO):")
     x = input("")
+    x = x.replace("\"", "")
     f = open(x, "r+b")
 
     print("Please insert the add-on model (AMO):")
     y = input("")
+    y = y.replace("\"", "")
     g = open(y, "r+b")
 
     new_file = open("New_File.bin", "w+b")
@@ -57,6 +71,9 @@ def main():
     #-1. Extract first AMGs from each AMO (I can automate the new location of each AMG and axis on the main model)
 
     #Search and Extract first AMG to temp1
+    chunk = f.read(16)
+    lgbt_locs = []
+    lgbt_lens = []
     f.seek(0)
     f.seek(16)
     hti = f.read(4)
@@ -69,11 +86,40 @@ def main():
     f.seek(0)
     f.seek(first_amg + 28)
     hti = f.read(4)
-    first_amg_length = hex_to_int(hti)
+    first_amg_length = hex_to_int(hti)  
+
+
+    #searches for already lgbt'd part
+    while chunk != b"":
+        if chunk[0] == 0x23 and chunk[1] == 0x4C and chunk[2] == 0x47 and chunk[3] == 0x42 and chunk[4] == 0x54:
+            lgbt_locs.append(((f.tell()-16)))
+        chunk = f.read(16)
+
+    for i in range(int(len(lgbt_locs))):
+        f.seek(0)
+        f.seek(lgbt_locs[i]+28)
+        hti = f.read(4)
+        lgbt_len = hex_to_int(hti)
+        lgbt_lens.append(lgbt_len)
+
+    #print(lgbt_locs, lgbt_lens)
+
+
+
+    ##get all of the file + other lgbts
+    to_add = 0
+    for i in range(int(len(lgbt_locs))):
+        current = lgbt_lens[i]
+        to_add += current
+        
     f.seek(0)
-    f.seek(first_amg)
-    first_amg_all = f.read(first_amg_length + f_name_amnt)
+    f.seek(first_amg) 
+    first_amg_all = f.read(first_amg_length + f_name_amnt + to_add)
+    to_add = 0
     temp1.write(first_amg_all)
+    f.seek(0) 
+        
+    
     
     #Search and Extract first AMG to temp2
     g.seek(0)
@@ -95,6 +141,10 @@ def main():
     temp2.write(second_amg_all)
     
 
+
+
+
+
     #-2. On the 2nd AMG, adjust ALL animations (even hands)
 
     #separates this amg from the rest for more than one round of lgbt
@@ -108,19 +158,18 @@ def main():
     #print(to_add)
     to_add = to_add*65536
     #print(to_add)
-    
-    
+   
     #gather all animation locations on temp2
     g_locs = []
-    #print(g_name_amnt_x)
+    #print(g_name_amnt_x, "g_name_amnt_x")
     for i in range(int(g_name_amnt_x)):
         temp2.seek(16)
         #print(16+(((i+1) * 80)-12))
         temp2.seek(16+(((i+1) * 80)-12))
         hti = temp2.read(4)
+        #print(hti, "hti")
         g_anim = hex_to_int(hti)
         g_locs.append(g_anim)
-    #print(g_anim_locs)
 
     
     #removing any animations that are empty or are not model part heavy
@@ -138,6 +187,7 @@ def main():
         
         if empt_check != 0:
             g_anim_locs.append(g_locs[i])
+
 
     #model part check to get all the animations linked to model parts
     for i in range(int(len(g_locs))):
@@ -185,13 +235,19 @@ def main():
     f_anim_other = []
 
     #emptiness check to get all the main anims with links and not empty or model parts
+    #print(f_locs, "list")
     for i in range(int(len(f_locs))):
+        temp1.seek(0)
+        #print(temp1.seek(f_locs[i]+8), "seek")
         temp1.seek(0)
         temp1.seek(f_locs[i]+8)
         hti = temp1.read(4)
+        #print(hti)
         empt_check = hex_to_int(hti)
+        #print(empt_check, "empt")
         
         if empt_check != 0:
+            #print(f_locs[i], "flocs")
             f_anim_locs.append(f_locs[i])
 
     #model part check to get all the animations linked to model parts
@@ -472,6 +528,7 @@ def main():
     for i in range(((f_amnt))):
         f.seek(0)
         f.seek((f_amg_loc + (i*32) + f_amg_len))
+        #print(f.seek((f_amg_loc + (i*32) + f_amg_len)))
         f_axis_names.append(f.read(32))
 
 
@@ -581,25 +638,27 @@ def main():
         temp1.seek(0,2)
         temp1.write(b"\x00")
 
+    temp2_loc = temp1.seek(0,2)
+    temp1.seek(0)
     temp1.seek(0,2)
     temp1.write(temp2_all)
 
     temp_all_len = temp1_len + temp2_len
     temp_all_len_extra = (math.ceil(temp_all_len/65536)) * 65536
     temp_all_to_add = temp_all_len_extra - temp_all_len
-    print(temp_all_len,temp_all_len_extra,temp_all_to_add)
-    print(temp_all_len_extra - (math.ceil(temp2_len/65536)*65536))
+    #print(temp_all_len,temp_all_len_extra,temp_all_to_add)
+    #print(temp_all_len_extra - (math.ceil(temp2_len/65536)*65536))
 
     
 
     #-5. Ask for which axis' need replaced
 
     #ask for what names you want, and remembers the position
-    text_file = open("lgbt animation stuff.txt", "w+")
+    text_file = open("LGBT ANIM LOCATIONS.txt", "w+")
 
     gposes = []
     fposes = []
-    
+    if_merge = []
     print("")
     counter = 0
     cancel = False
@@ -635,11 +694,22 @@ def main():
         fposes.append(f_cho_pos)
         uuu = f_choice
         uuu = uuu.replace("0x", "")
+
+        print("Does this axis merge? (y/n)")
+        merge_choice = input("")
+        merge_choice = merge_choice[0:1]
+        merge_choice = merge_choice.lower()
+
+        if merge_choice == "y":
+            if_merge.append("y")
+        if merge_choice == "":
+            if_merge.append("y")
+        if merge_choice == "n":
+            if_merge.append("n")
         
-        #writes data to text file for people who want to further use
-        text_file.write("Base Axis = " + str(uuu) + " Add On Axis = " + str(vvv) + "\n")
 
 
+        
         print("Continue? (y/n)")
         cho = input("")
         cho = cho.lower()
@@ -648,9 +718,9 @@ def main():
             cancel = False
         if cho == "n":
             cancel = True
+        #print(if_merge, "if_merge")
 
-
-    print(fposes)
+    #print(fposes)
     #print(g_locs,f_locs)
 
 
@@ -663,6 +733,9 @@ def main():
         index_locate_f = fposes[i]
         to_go_to_g = g_locs[index_locate_g] + to_add
         to_go_to_f = f_locs[index_locate_f]
+        knowing_merge = if_merge[i]
+        
+        
         #g anims
         temp1.seek(0)
         temp1seek_g = temp1.seek(to_go_to_g)
@@ -672,30 +745,60 @@ def main():
         chunk_amnt_g = hex_to_int(hti)
         g_amnts.append(chunk_amnt_g)
 
-        #f anims
-        temp1.seek(0)
-        temp1seek_f = temp1.seek(to_go_to_f)
-        temp1.seek(0)
-        temp1.seek(to_go_to_f+28)
-        hti = temp1.read(4)
-        chunk_amnt_f = hex_to_int(hti)
-        f_amnts.append(chunk_amnt_f)
+        if knowing_merge == "y":
+            #f anims
+            temp1.seek(0)
+            temp1seek_f = temp1.seek(to_go_to_f)
+            temp1.seek(0)
+            temp1.seek(to_go_to_f+28)
+            hti = temp1.read(4)
+            chunk_amnt_f = hex_to_int(hti)
+            f_amnts.append(chunk_amnt_f)
+        if knowing_merge == "n":
+            f_amnts.append(0)
+
+        #print(chunk_amnt_g, "chunk amt g")
         
         for i in range(chunk_amnt_g):
             temp1.seek(0)
             temp1.seek(temp1seek_g)
             had_to_grab_g = temp1.read(32 + (chunk_amnt_g*32))
 
-        for i in range(chunk_amnt_f):
-            temp1.seek(0)
-            temp1.seek(temp1seek_f + 32)
-            had_to_grab_f = temp1.read((chunk_amnt_f*32))
+
+        if knowing_merge == "y":
+            for i in range(chunk_amnt_f):
+                temp1.seek(0)
+                temp1.seek(temp1seek_f + 32)
+                had_to_grab_f = temp1.read((chunk_amnt_f*32))
 
         anim_3 = temp3.seek(0,2)
         anim_3_locs.append(anim_3)
         temp3.write(had_to_grab_g)
-        temp3.write(had_to_grab_f)
 
+        ####SEARCH FOR ANY EXTRA ANIM LOCS
+        temp3.seek(0)
+        end = temp3.seek(0,2)
+        temp3.seek(end-16)
+        hti = temp3.read(4)
+        other_old = hex_to_int(hti)
+        if other_old != 0:
+            other_old += (to_add)
+            other_old = int(other_old)
+            ith = other_old
+            other_new = int_to_hex(ith)
+            temp3.seek(0)
+            end = temp3.seek(0,2)
+            temp3.seek(end-16)
+            temp3.write(other_new)
+
+        temp3.seek(0)
+        temp3.seek(0,2)
+            
+        if knowing_merge == "y":
+            temp3.write(had_to_grab_f)
+        
+        #writes data to text file for people who want to further use
+        
     #print(anim_3_locs)
 
     #Edits the new anims
@@ -703,16 +806,24 @@ def main():
         temp3.seek(0)
         current_anim = temp3.seek(anim_3_locs[i])
         current_amnt = g_amnts[i]
+            
         for i in range(current_amnt):
             temp3.seek(0)
             temp3.seek(current_anim + 32 + (32*(i+1)) - 24)
             hti = temp3.read(4)
             old = hex_to_int(hti)
+            #print(to_add, "to_add")
             ith = old + to_add
             new = int_to_hex(ith)
             temp3.seek(0)
             temp3.seek(current_anim + 32 + (32*(i+1)) - 24)
             temp3.write(new)
+
+            
+
+    
+        
+        
    
             
     #Edits the amounts
@@ -730,6 +841,7 @@ def main():
             hti = temp3.read(4)
             old = hex_to_int(hti)
             ith = current_amnt_g + current_amnt_f
+            #print(ith, "ith")
             new = int_to_hex(ith)
             temp3.seek(0)
             temp3.seek(current_anim + 28)
@@ -748,10 +860,19 @@ def main():
     #print(final_new_len)
     final_new_locs = []
     for i in range(int(len(anim_3_locs))):
+        index_locate_g = gposes[i]
+        index_locate_f = fposes[i]
+        
         new_loc = (final_new_len - (len_of_3 - anim_3_locs[i]))
         #print(new_loc)
         final_new_locs.append(new_loc)
+        text_file.write("Base Anim Location " + f_new_names[index_locate_f] + " = " + str((hex(to_go_to_f))).replace("0x", "") + "\n"
+                    + "Addon Anim Locations " + g_new_names[index_locate_g] + " = " + str((hex(to_go_to_g)).replace("0x", "")) + "\n" + 
+                    "New Anim Locations " + g_new_names[index_locate_g] + " = " + str(hex(final_new_locs[i]).replace("0x", "")) + "\n" +
+                        "--------------------------------------------------" + "\n")
     final_new_locs.reverse()
+    
+    
     #print(final_new_locs)
 
     #edit top files
@@ -776,9 +897,191 @@ def main():
         temp1.write(to_paste_in)
         
 
+    #Correct AMG Length
+    temp1.seek(0)
+    ith = temp1.seek(0,2)
+    new_amg_length = int_to_hex(ith)
+    temp1.seek(0)
+    temp1.seek(28)
+    temp1.write(new_amg_length)
+    
 
-    #-9. Put all new model part locations in a .txt file for user to place in themselves
-    ##lmao nah
+    #-9. Put all new model part locations as the user wants
+    print("Gathering Model Part Locations...")
+    
+    #seek to and cut and paste in temp5
+    axis_to_mp_seek = (48 + (f_name_amnt_x*80))
+    temp1.seek(0)
+    temp1.seek(axis_to_mp_seek)
+    for_6 = temp1.read()
+    temp6.write(for_6)
+
+    #read all model part locations on model F
+    f_mp_locs = []
+    f_mp_texs = []
+    f_mp_shad = []
+    f_mp_counter = 0
+
+    temp6.seek(0)
+    hti = temp6.read(4)
+    f_mp_counter = hex_to_int(hti)
+    temp6.seek(0)
+
+    for i in range(f_mp_counter):
+        mp_to_go =(i*4)
+        temp6.seek(mp_to_go+16)
+        hti = temp6.read(4)
+        mp = hex_to_int(hti)
+        f_mp_locs.append(mp)
+
+    #gets texture and shader values of each model part
+    for i in f_mp_locs:
+        temp6.seek(0)
+        temp6.seek(i+8)
+        hti = temp6.read(4)
+        f_tex = hex_to_int(hti)
+        f_mp_texs.append(f_tex)
+
+        temp6.seek(0)
+        temp6.seek(i+12)
+        hti = temp6.read(4)
+        f_sha = hex_to_int(hti)
+        f_mp_shad.append(f_sha)
+
+    
+
+
+    g_mp_seek = (temp2_loc - axis_to_mp_seek)
+    temp6.seek(g_mp_seek)
+    #print(temp6.tell())
+    #read all model part locations on model G
+    g_mp_locs = []
+    g_mp_shad = []
+    g_mp_texs = []
+    g_mp_counter = 0
+
+    g_axis_to_mp_seek = 48+(g_name_amnt_x*80)
+    temp6.seek(g_axis_to_mp_seek+g_mp_seek)
+    #print(temp6.tell())
+    hti = temp6.read(4)
+    g_mp_counter = hex_to_int(hti)
+    
+    
+    for i in range(g_mp_counter):
+        mp_to_go =(g_axis_to_mp_seek+g_mp_seek+(i*4))
+        temp6.seek(mp_to_go+16)
+        hti = temp6.read(4)
+        mp = hex_to_int(hti)
+        mp += (g_axis_to_mp_seek+g_mp_seek)
+        g_mp_locs.append(mp)
+    #print(g_mp_locs)
+
+
+    #gets texture and shader values of each model part
+    for i in g_mp_locs:
+        temp6.seek(0)
+        temp6.seek(i+8)
+        hti = temp6.read(4)
+        g_tex = hex_to_int(hti)
+        g_mp_texs.append(g_tex)
+
+        temp6.seek(0)
+        temp6.seek(i+12)
+        hti = temp6.read(4)
+        g_sha = hex_to_int(hti)
+        g_mp_shad.append(g_sha)
+
+
+    #removing model parts section
+    cont_val = True
+    while cont_val == True:
+        choice = input("Do you want to remove model parts (y/n)")
+        choice = choice.lower()
+        choice = choice[0:1]
+        if choice == "y":
+            cont_val = True
+            print("Base Model Parts:")
+            for i in range(int(len(f_mp_shad))):        
+                print("MP", f_mp_locs[i], "TEX", f_mp_texs[i], "SHA", f_mp_shad[i], "("+str(i)+")")
+            print("")
+            print("What model parts do you want to remove?")
+            print("Pick the model part in order of appearance (1-" + str(int(len(f_mp_locs)))+")")
+            mp_input = int(input(""))
+            while mp_input > int(len(f_mp_locs)):
+                print("Not within range, try again")
+                mp_input = int(input(""))
+
+            mp_input -=1
+            #remove the model parts
+            temp6.seek(0)
+            temp6.seek(16+(mp_input*4))
+            for i in range(4):
+                temp6.write(b"\x00")
+            f_rest_amnt = (int(len(f_mp_locs)) - mp_input)*4
+            mp_rest = temp6.read(f_rest_amnt)
+            temp6.seek(16 + (mp_input*4))
+            temp6.write(mp_rest)
+            temp6.seek(0)
+            hti = temp6.read(4)
+            xxx = hex_to_int(hti)
+            ith = xxx-1
+            mp_counter = int_to_hex(ith)
+            temp6.seek(0)
+            temp6.write(mp_counter)
+            f_mp_locs.remove(f_mp_locs[mp_input])
+            f_mp_texs.remove(f_mp_texs[mp_input])
+            f_mp_shad.remove(f_mp_shad[mp_input])            
+
+        if choice == "n":
+            cont_val = False
+
+    #inserting model parts
+    cont_val = True
+    while cont_val == True:
+        choice = input("Do you want to insert model parts (y/n)")
+        choice = choice.lower()
+        choice = choice[0:1]
+        if choice == "y":
+            cont_val = True
+            print("Addon Model Parts:")
+            for i in range(int(len(g_mp_shad))):        
+                print("MP", g_mp_locs[i], "TEX", g_mp_texs[i], "SHA", g_mp_shad[i], "("+str(i)+")")
+            print("")
+            print("What model parts do you want to remove?")
+            print("Pick the model part in order of appearance (1-" + str(int(len(g_mp_locs)))+")")
+            mp_input = int(input(""))
+            while mp_input > int(len(g_mp_locs)):
+                print("Not within range, try again")
+                mp_input = int(input(""))
+            mp_input -=1
+            temp6.seek(0)
+            hti = temp6.read(4)
+            mp_counter = hex_to_int(hti)
+            temp6.seek(0)
+            temp6.seek(16+(mp_counter*4))
+            ith = g_mp_locs[mp_input]
+            g_to_write = int_to_hex(ith)
+            temp6.write(g_to_write)
+            temp6.seek(0)
+            hti = temp6.read(4)
+            xxx = hex_to_int(hti)
+            ith = xxx+1
+            xxx = int_to_hex(ith)
+            temp6.seek(0)
+            temp6.write(xxx)
+
+
+            
+        if choice == "n":
+            cont_val = False
+
+    #placing temp6 in the temp1 file for rebuilding
+    temp6.seek(0)
+    temp6_all = temp6.read()
+    temp1.seek(0)
+    temp1.seek(axis_to_mp_seek)
+    temp1.write(temp6_all)
+    
 
     #-10. Rebuild AMO and add in the old AMGs and grab locations, place, etc
     f.seek(0)
@@ -789,6 +1092,8 @@ def main():
     temp1_read = temp1.read()
     temp1_size = temp1.seek(0,2)
     temp4.write(temp1_read)
+
+    
 
     f.seek(0)
     f.seek(first_amg + first_amg_length)
@@ -837,6 +1142,7 @@ def main():
     temp4.seek(ppp+4)
     hti = temp4.read(4)
     go_to = hex_to_int(hti)
+    
 
     llll = ((axis_amnt+1)*axis_line_len)
     #print(str(llll), "look at dis")
@@ -873,41 +1179,43 @@ def main():
     temp4.seek(0)
     final = temp4.read(ith)
     new_file.write(final)
+
+    #For adding/removing model parts
     
     
 
 
     # deletes temp files
     tn1 = "Files\z1.bin"
-    temp1 = open(tn1, "r+b")
-    temp1.close()
+    #temp1 = open(tn1, "r+b")
+    #temp1.close()
     tn2 = "Files\z2.bin"
-    temp2 = open(tn2, "r+b")
-    temp2.close()
+    #temp2 = open(tn2, "r+b")
+    #temp2.close()
     tn3 = "Files\z3.bin"
-    temp3 = open(tn3, "r+b")
-    temp3.close()
+    #temp3 = open(tn3, "r+b")
+    #temp3.close()
     tn4 = "Files\z4.bin"
-    temp4 = open(tn4, "r+b")
-    temp4.close()
+    #temp4 = open(tn4, "r+b")
+    #temp4.close()
     tn5 = "Files\z5.bin"
-    temp5 = open(tn5, "r+b")
-    temp5.close()
+    #temp5 = open(tn5, "r+b")
+    #temp5.close()
     tn6 = "Files\z6.bin"
-    temp6 = open(tn6, "r+b")
-    temp6.close()
+    #temp6 = open(tn6, "r+b")
+    #temp6.close()
     tn7 = "Files\z7.bin"
     temp7 = open(tn7, "r+b")
     temp7.close()
     tn8 = "Files\z8.bin"
     temp8 = open(tn8, "r+b")
     temp8.close()
-    os.remove(tn1)
-    os.remove(tn2)
-    os.remove(tn3)
-    os.remove(tn4)
-    os.remove(tn5)
-    os.remove(tn6)
+    #os.remove(tn1)
+    #os.remove(tn2)
+    #os.remove(tn3)
+    #os.remove(tn4)
+    #os.remove(tn5)
+    #os.remove(tn6)
     os.remove(tn7)
     os.remove(tn8)
 
